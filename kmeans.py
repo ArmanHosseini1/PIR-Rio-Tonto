@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import KMeans
 from matplotlib.colors import ListedColormap
 from kneed import KneeLocator
+from sklearn.metrics import silhouette_score
 
 def apply_mask(image):
     mask_norm = np.all((image >= 0) & (image <= 1), axis=2)
@@ -40,7 +41,7 @@ if (scaling==1):
 else:
     X_scaled = X
 
-comparison = 1
+comparison = 0
 
 if (comparison==1):
 
@@ -55,7 +56,10 @@ if (comparison==1):
     labels_images = []
 
     for k in range(len(k_values)):
-        kmeans = KMeans(n_clusters=k_values[k], random_state=42)
+        kmeans = KMeans(n_clusters=k_values[k], init="k-means++",  # par défaut, mais utile à expliciter
+        n_init=5,         # plus de répétitions -> plus stable
+        max_iter=500,
+        random_state=42)
         labels = kmeans.fit_predict(X_scaled)
         labels_images += [labels.reshape(m, n)]
 
@@ -67,23 +71,39 @@ if (comparison==1):
 else:
 
     inertias = []
-    K_range = range(1, 15)
+    #sil_scores = []
+
+    K_range = range(20, 40, 3)
+
+    """
+    sample_size = min(10000, X_scaled.shape[0])
+    sample_idx = np.random.choice(X_scaled.shape[0], sample_size, replace=False)
+    X_sample = X_scaled[sample_idx]
+    """
 
     for k in K_range:
-        kmeans = KMeans(n_clusters=k, random_state=42)
+        kmeans = KMeans(n_clusters=k, init='k-means++', n_init=3, random_state=42)
         kmeans.fit(X_scaled)
+        #labels = kmeans.fit_predict(X_scaled)
+        #labels_sample = labels[sample_idx]
+        #sil = silhouette_score(X_sample, labels_sample)
+        #sil_scores.append(sil)
         inertias.append(kmeans.inertia_)
+        print("Done")
 
     plt.plot(K_range, inertias, marker='o')
+    #plt.plot(K_range, sil_scores, marker='o')
     plt.xlabel('Nombre de clusters k')
     plt.ylabel('Inertie (somme des distances)')
+    #plt.ylabel('Score silhouette')
     plt.title('Méthode du coude')
     plt.show()
 
     knee = KneeLocator(K_range, inertias, curve='convex', direction='decreasing')
     optimal_k = knee.knee
+    #optimal_k = K_range[np.argmax(sil_scores)]
 
-    print(f"k optimal trouvé par kneed = {optimal_k}")
+    print(f"k optimal trouvé = {optimal_k}")
 
     kmeans = KMeans(n_clusters=optimal_k, random_state=42)
     labels = kmeans.fit_predict(X_scaled)
