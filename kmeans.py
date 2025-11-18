@@ -73,7 +73,7 @@ else:
     inertias = []
     #sil_scores = []
 
-    K_range = range(20, 40, 3)
+    K_range = range(2, 40, 5)
 
     """
     sample_size = min(10000, X_scaled.shape[0])

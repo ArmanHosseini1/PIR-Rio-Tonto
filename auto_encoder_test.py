@@ -11,6 +11,7 @@ from rasterio.plot import reshape_as_image, reshape_as_raster
 from pathlib import Path
 from osgeo import ogr, gdal
 import matplotlib.pyplot as plt
+import tifffile as tiff
 
 def apply_mask(image):
     mask_norm = np.all((image >= 0) & (image <= 1), axis=2)
@@ -20,9 +21,9 @@ def apply_mask(image):
     return image
 
 print("test")
-image_path = r'C:\Users\arman\Desktop\INSA Toulouse\5A\PIR\Données\SENTINEL2B_20240410-112055-466_L2A_T29SQB_C_V3-1_FRE_extrait_stack_gain_VNIR10.img'
-raster_img = rio.open(image_path)
-arr_img = reshape_as_image(raster_img.read())
+image_path = r'C:\Users\arman\Desktop\INSA Toulouse\5A\PIR\PIR-Rio-Tinto\INSA_Crop_EnMAP.tif'
+arr_img = tiff.imread(image_path)
+print(arr_img.shape)
 image = apply_mask(arr_img) # mask to delete bad pixels
 
 l, m, n = image.shape # check the size of the image 
